@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Test build artifacts
+tests/**/*.js
+tests/**/*.d.ts
+tests/**/*.d.ts.map
+tests/**/*.js.map
+
+# Cache
+.anchor/cache/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+
+# Environment
+.env
+.env.local
+
+# Repomix artifacts
+xml
+repomix-output.xml

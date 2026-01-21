@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(echo:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Skill(planning)",
+      "Bash(node:*)",
+      "Bash([ -f package.json ])",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(wc:*)",
+      "Bash(git add:*)",
+      "Bash(cat:*)",
+      "Bash(git reset:*)"
+    ]
+  }
+}
