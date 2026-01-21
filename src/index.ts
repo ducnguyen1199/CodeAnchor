@@ -4,13 +4,15 @@
  * @module codeanchor
  */
 
-// Phase 0: Only cache-manager is implemented for validation
+// Phase 0: Cache manager (from validation)
 export { DependencyAwareCacheManager } from './core/cache-manager.js';
 export type { CacheEntry, DependencyCache, ComponentStructure } from './core/cache-manager.js';
 
-// TODO: Phase 1 exports (will be uncommented during Phase 1 implementation)
-// export { loadConfig } from './core/config-loader.js';
-// export { AnchorConfigSchema } from './core/schema.js';
-// export { createProvider } from './providers/index.js';
-// export type { AnchorConfig, AIConfig } from './types/config.js';
-// export type { AIProvider } from './types/provider.js';
+// Phase 1: Core configuration and providers
+export { configLoader, ConfigLoader, ConfigError, loadConfig } from './core/config-loader.js';
+export { configSchema, type AnchorConfig, type PartialAnchorConfig } from './core/config-schema.js';
+export { techDetector, TechDetector, type DetectionResult, type PackageJson } from './core/tech-detector.js';
+export { createProvider, getDefaultModel, isProviderSupported } from './providers/index.js';
+export type { AIProvider, AIProviderConfig, ComponentMeta } from './providers/index.js';
+export { AIProviderError, ConnectionTestError, GenerationError } from './providers/index.js';
+export { templateEngine, TemplateEngine, renderComponentDoc, type ComponentTemplateData } from './templates/index.js';

@@ -1,0 +1,259 @@
+/**
+ * Init Command
+ *
+ * Interactive setup wizard for initializing CodeAnchor in a project.
+ * Detects tech stack, prompts for configuration, and generates anchor.config.json.
+ */
+
+import boxen from 'boxen';
+import chalk from 'chalk';
+import inquirer from 'inquirer';
+import ora from 'ora';
+import * as path from 'path';
+import * as fs from 'fs/promises';
+
+import { configLoader } from '../../core/config-loader.js';
+import { techDetector } from '../../core/tech-detector.js';
+import { createProvider, getDefaultModel } from '../../providers/index.js';
+import type { AnchorConfig } from '../../core/config-schema.js';
+import type { AIProviderConfig } from '../../providers/index.js';
+
+export async function initCommand(): Promise<void> {
+  console.log(boxen(chalk.bold.cyan('CodeAnchor Setup'), {
+    padding: 1,
+    margin: 1,
+    borderStyle: 'round',
+    borderColor: 'cyan'
+  }));
+
+  try {
+    // Step 1: Check for existing config
+    const existingConfig = await configLoader.exists();
+    if (existingConfig) {
+      const { overwrite } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'overwrite',
+        message: 'Config file already exists. Overwrite?',
+        default: false
+      }]);
+
+      if (!overwrite) {
+        console.log(chalk.yellow('\n✓ Keeping existing configuration'));
+        return;
+      }
+    }
+
+    // Step 2: Detect tech stack
+    const spinner = ora('Detecting tech stack...').start();
+    const detection = await techDetector.detectFromPackageJson();
+    const projectName = await techDetector.detectProjectName();
+    spinner.succeed('Tech stack detected');
+
+    console.log(chalk.cyan('\n📦 Detected Stack:'));
+    detection.stack.forEach(tech => console.log(`   ${chalk.gray('•')} ${tech}`));
+
+    // Step 3: Project structure selection
+    const { structure } = await inquirer.prompt([{
+      type: 'list',
+      name: 'structure',
+      message: 'Select project structure:',
+      choices: [
+        {
+          name: 'Atomic Design (atoms → molecules → organisms)',
+          value: 'atomic'
+        },
+        {
+          name: 'Feature-based (features/Auth, features/Checkout)',
+          value: 'feature-based'
+        },
+        {
+          name: 'Modular (modules with routes & state)',
+          value: 'modular'
+        },
+        {
+          name: 'Custom (I\'ll configure manually)',
+          value: 'custom'
+        }
+      ],
+      default: detection.suggestions.structure
+    }]);
+
+    // Get default paths based on structure
+    const paths = getDefaultPaths(structure);
+
+    // Step 4: AI setup
+    console.log(chalk.cyan('\n🤖 AI Configuration'));
+    const { enableAI } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'enableAI',
+      message: 'Enable AI-powered documentation generation?',
+      default: true
+    }]);
+
+    let aiConfig: AnchorConfig['ai'] = undefined;
+
+    if (enableAI) {
+      const { provider, apiKey } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'provider',
+          message: 'Select AI provider:',
+          choices: [
+            { name: 'Claude (Anthropic) - Recommended', value: 'claude' },
+            { name: 'OpenAI (GPT-4) - Coming soon', value: 'openai', disabled: true },
+            { name: 'Google Gemini - Coming soon', value: 'gemini', disabled: true },
+            { name: 'Ollama (Local) - Coming soon', value: 'ollama', disabled: true }
+          ]
+        },
+        {
+          type: 'password',
+          name: 'apiKey',
+          message: 'Enter API key:',
+          mask: '*',
+          validate: (input: string) => {
+            if (!input || input.trim().length === 0) {
+              return 'API key is required';
+            }
+            return true;
+          }
+        }
+      ]);
+
+      const model = getDefaultModel(provider);
+
+      // Test connection
+      const testSpinner = ora('Testing AI connection...').start();
+      try {
+        const providerConfig: AIProviderConfig = {
+          provider,
+          model,
+          apiKey
+        };
+
+        const aiProvider = createProvider(providerConfig);
+        const connected = await aiProvider.testConnection();
+
+        if (connected) {
+          testSpinner.succeed(chalk.green('AI connection successful'));
+          aiConfig = providerConfig;
+        }
+      } catch (error) {
+        testSpinner.fail(chalk.red('AI connection failed'));
+        console.log(chalk.yellow('\n⚠️  You can continue without AI (template-only mode)'));
+
+        const { continueWithoutAI } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'continueWithoutAI',
+          message: 'Continue without AI?',
+          default: true
+        }]);
+
+        if (!continueWithoutAI) {
+          console.log(chalk.red('\n✗ Setup cancelled'));
+          process.exit(1);
+        }
+
+        aiConfig = undefined;
+      }
+    }
+
+    // Step 5: Component detection setup
+    const { autoGenerateDocs } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'autoGenerateDocs',
+      message: 'Auto-generate docs when components change?',
+      default: true
+    }]);
+
+    // Step 6: Generate configuration
+    const config: AnchorConfig = {
+      projectName,
+      structure: {
+        type: structure,
+        paths
+      },
+      stack: detection.stack,
+      ai: aiConfig,
+      detection: {
+        enabled: true,
+        watchPatterns: detection.suggestions.watchPatterns,
+        autoGenerateDocs
+      },
+      documentation: {
+        language: 'en',
+        includeUsageExamples: true
+      },
+      git: {
+        conventionalCommits: true,
+        autoStageDocs: true
+      }
+    };
+
+    // Step 7: Write config file
+    const writeSpinner = ora('Creating configuration...').start();
+    const configPath = await configLoader.write(config);
+    writeSpinner.succeed(`Config created: ${chalk.cyan(path.relative(process.cwd(), configPath))}`);
+
+    // Step 8: Create .anchor directory
+    await fs.mkdir('.anchor', { recursive: true });
+    await fs.mkdir('.anchor/cache', { recursive: true });
+
+    // Success message
+    console.log(boxen(
+      chalk.green.bold('✓ Setup Complete!') + '\n\n' +
+      'CodeAnchor is ready to use.\n\n' +
+      chalk.cyan('Next steps:') + '\n' +
+      '  • Review anchor.config.json\n' +
+      '  • Run "anchor sync" to generate docs\n' +
+      (aiConfig ? '  • AI-powered docs enabled ✨\n' : '  • Template-only mode (no AI)\n'),
+      {
+        padding: 1,
+        margin: 1,
+        borderStyle: 'round',
+        borderColor: 'green'
+      }
+    ));
+
+  } catch (error) {
+    console.error(chalk.red('\n✗ Setup failed:'), error);
+    process.exit(1);
+  }
+}
+
+/**
+ * Get default component paths based on structure type
+ */
+function getDefaultPaths(structure: string): Record<string, string> {
+  switch (structure) {
+    case 'atomic':
+      return {
+        atoms: 'src/components/atoms',
+        molecules: 'src/components/molecules',
+        organisms: 'src/components/organisms',
+        templates: 'src/components/templates'
+      };
+
+    case 'feature-based':
+      return {
+        features: 'src/features',
+        components: 'src/components',
+        shared: 'src/shared'
+      };
+
+    case 'modular':
+      return {
+        modules: 'src/modules',
+        components: 'src/components'
+      };
+
+    case 'custom':
+      return {
+        components: 'src/components'
+      };
+
+    default:
+      return {
+        components: 'src/components'
+      };
+  }
+}
