@@ -1,12 +1,19 @@
 {
   "name": "codeanchor",
   "version": "0.1.0",
-  "description": "A CLI tool that anchors your code to standards and living documentation",
+  "description": "⚓ Anchor your code to standards and living documentation - Auto-generate component docs with AI",
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "anchor": "./bin/anchor.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -14,17 +21,34 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "lint": "eslint src/**/*.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "cli",
     "documentation",
+    "component-docs",
+    "living-documentation",
     "code-standards",
     "ai",
-    "developer-tools"
+    "anthropic",
+    "claude",
+    "react",
+    "typescript",
+    "developer-tools",
+    "git-hooks",
+    "props-extraction",
+    "ast"
   ],
-  "author": "",
+  "author": "CodeAnchor Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/codeanchor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/codeanchor/issues"
+  },
+  "homepage": "https://github.com/yourusername/codeanchor#readme",
   "engines": {
     "node": ">=20.0.0"
   },

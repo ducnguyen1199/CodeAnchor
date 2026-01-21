@@ -1,0 +1,65 @@
+# Source files
+src/
+tsconfig.json
+
+# Tests
+tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+vitest.config.ts
+coverage/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Plans and documentation (keep only essential)
+plans/
+docs/brainstorm.md
+docs/analysis.md
+docs/validation-report.md
+docs/code-standards.md
+docs/codebase-summary.md
+docs/project-overview-pdr.md
+docs/system-architecture.md
+docs/project-roadmap.md
+
+# Keep these docs
+!docs/getting-started.md
+!docs/README.md
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Build artifacts
+node_modules/
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+.tmp/
+.cache/
+.anchor/
+
+# Claude
+.claude/
+
+# Environment
+.env
+.env.*
+!.env.example

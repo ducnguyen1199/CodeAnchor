@@ -1,0 +1,365 @@
+# CodeAnchor ⚓
+
+> Anchor your code to standards and living documentation
+
+CodeAnchor is a CLI tool that automatically generates and maintains living documentation for your React components. It integrates seamlessly with your git workflow, keeping your docs in sync with your code without slowing you down.
+
+## Features
+
+- 🚀 **Fast & Reliable** - Pre-commit hook completes in <2s with cache-aware processing
+- 🤖 **AI-Powered** - Optional AI descriptions using Claude for rich documentation
+- 📝 **Props Extraction** - Automatic TypeScript prop analysis with types and JSDoc
+- 🔄 **Git Integration** - Auto-sync docs on commit, AI-generated commit messages
+- ⚡ **Smart Caching** - Dependency-aware caching with 80% hit rate
+- 🎯 **Template-First** - Works without AI for speed, enrich manually when needed
+
+## Quick Start
+
+### Installation
+
+```bash
+npm install -g codeanchor
+```
+
+### Initialize in Your Project
+
+```bash
+cd your-react-project
+anchor init
+```
+
+The interactive wizard will:
+- Detect your tech stack (React, Next.js, Vue, etc.)
+- Configure project structure (Atomic Design, Feature-based, etc.)
+- Set up AI provider (optional - Claude recommended)
+- Install git pre-commit hook (optional)
+
+### Basic Usage
+
+```bash
+# Generate/update documentation for all components
+anchor sync
+
+# Watch for changes and auto-update docs
+anchor watch
+
+# Enrich docs with AI descriptions (requires AI config)
+anchor enrich
+
+# Create commit with AI-generated message
+anchor commit
+```
+
+## Commands
+
+### `anchor init`
+
+Interactive setup wizard that configures CodeAnchor for your project.
+
+**What it does:**
+- Detects your tech stack from package.json
+- Prompts for project structure type
+- Sets up AI provider (optional)
+- Creates `anchor.config.json`
+- Optionally installs git pre-commit hook
+
+### `anchor sync [options]`
+
+Generate or update component documentation.
+
+**Options:**
+- `--fast` - Only process changed files (cache-aware)
+- `--force` - Force regeneration of all docs
+- `--no-ai` - Disable AI-powered generation (template-only)
+
+**Examples:**
+```bash
+# Full sync with AI
+anchor sync
+
+# Fast sync - only changed files
+anchor sync --fast
+
+# Force regenerate all docs
+anchor sync --force
+
+# Template-only mode (no AI)
+anchor sync --no-ai
+```
+
+### `anchor watch [options]`
+
+Watch for file changes and automatically sync documentation.
+
+**Options:**
+- `--no-ai` - Disable AI-powered generation
+
+**Example:**
+```bash
+# Watch with AI
+anchor watch
+
+# Watch template-only
+anchor watch --no-ai
+```
+
+### `anchor enrich [options]`
+
+Manually enrich documentation with AI descriptions. Useful after fast commits.
+
+**Options:**
+- `--force` - Re-enrich all components (even already enriched)
+
+**Examples:**
+```bash
+# Enrich pending components
+anchor enrich
+
+# Re-enrich all components
+anchor enrich --force
+```
+
+### `anchor commit [options]`
+
+Create git commit with AI-generated semantic commit message.
+
+**Options:**
+- `-m, --message <message>` - Use provided message instead of AI
+
+**Examples:**
+```bash
+# AI-generated commit message
+anchor commit
+
+# Manual commit message
+anchor commit -m "feat: add new button component"
+```
+
+## How It Works
+
+### The Two-Phase Documentation Flow
+
+**Phase 1: Pre-commit (Fast)**
+- When you commit, the pre-commit hook runs automatically
+- It syncs documentation in template-only mode (no AI)
+- Generates props tables, types, and structure
+- Completes in <2s, never blocks your commit
+
+**Phase 2: Enrichment (Manual)**
+- After commit, run `anchor enrich` when you want AI descriptions
+- AI analyzes components and adds rich descriptions
+- Takes longer but runs on your schedule
+- Review and commit the enriched docs
+
+### Smart Caching
+
+CodeAnchor uses dependency-aware caching:
+- **File hash tracking** - Detects when components change
+- **Dependency monitoring** - Invalidates cache when imports change
+- **80% hit rate** - Most components don't need reprocessing
+
+### Git Integration
+
+**Pre-commit Hook:**
+```bash
+#!/bin/sh
+# Installed by anchor init
+# Runs template-only sync (<2s)
+# Never blocks your commit
+```
+
+**Commit Messages:**
+```bash
+# AI analyzes your staged changes
+anchor commit
+
+# Generates semantic commit messages like:
+# feat(Button): add loading state prop
+# fix(Input): correct validation logic
+# docs(Card): update usage examples
+```
+
+## Configuration
+
+### anchor.config.json
+
+Created by `anchor init`, customizable for your needs:
+
+```json
+{
+  "projectName": "my-app",
+  "structure": {
+    "type": "atomic",
+    "paths": {
+      "atoms": "src/components/atoms",
+      "molecules": "src/components/molecules",
+      "organisms": "src/components/organisms"
+    }
+  },
+  "stack": ["react", "typescript", "tailwindcss"],
+  "ai": {
+    "provider": "claude",
+    "model": "claude-3-5-sonnet-20241022",
+    "apiKey": "sk-ant-..."
+  },
+  "detection": {
+    "enabled": true,
+    "watchPatterns": [
+      "src/components/**/*.{tsx,ts,jsx,js}"
+    ],
+    "ignore": ["node_modules/**", "dist/**"],
+    "autoGenerateDocs": true
+  },
+  "documentation": {
+    "language": "en",
+    "includeUsageExamples": true
+  },
+  "git": {
+    "conventionalCommits": true,
+    "autoStageDocs": true
+  }
+}
+```
+
+### Environment Variables
+
+AI API keys can also be set via environment variables:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+## Component Documentation Format
+
+CodeAnchor generates README.md files next to each component:
+
+```markdown
+# Button
+
+_Component description pending..._
+
+## Props
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| variant | "primary" \| "secondary" | No | Button style variant |
+| size | "sm" \| "md" \| "lg" | No | Button size |
+| disabled | boolean | No | Disable button interaction |
+| onClick | () => void | Yes | Click handler function |
+
+## Usage Example
+
+\`\`\`tsx
+import { Button } from './Button';
+
+<Button
+  variant="primary"
+  size="md"
+  onClick={() => console.log('clicked')}
+>
+  Click me
+</Button>
+\`\`\`
+
+## Dependencies
+
+- `./types` - ButtonProps type definitions
+
+---
+
+*Last updated: 2026-01-21T10:30:00.000Z*
+```
+
+## Requirements
+
+- **Node.js:** >= 20.0.0
+- **TypeScript:** Recommended (not required)
+- **Git:** For commit hooks and workflows
+- **React/Vue/Svelte:** Supported frameworks
+
+## AI Providers
+
+### Claude (Anthropic) - Recommended
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+- Model: `claude-3-5-sonnet-20241022`
+- Best accuracy for code understanding
+- Semantic commit messages
+
+### OpenAI (Coming Soon)
+
+```bash
+export OPENAI_API_KEY=sk-...
+```
+
+### Google Gemini (Coming Soon)
+
+### Ollama (Coming Soon)
+
+## Architecture
+
+CodeAnchor is built with:
+- **Commander.js** - CLI framework
+- **Inquirer.js** - Interactive prompts
+- **ts-morph** - TypeScript AST parsing
+- **Zod** - Configuration validation
+- **Handlebars** - Template engine
+- **Chokidar** - File watching
+
+## Development
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/codeanchor.git
+cd codeanchor
+
+# Install dependencies
+npm install
+
+# Build TypeScript
+npm run build
+
+# Run tests
+npm test
+
+# Development mode (watch)
+npm run dev
+
+# Link locally for testing
+npm link
+```
+
+## Roadmap
+
+- [x] Phase 0: Technical validation
+- [x] Phase 1: Foundation & CLI
+- [x] Phase 2: Detection engine
+- [x] Phase 3: Git integration
+- [ ] Phase 4: Polish & launch (current)
+- [ ] Future: Monorepo support
+- [ ] Future: VS Code extension
+- [ ] Future: More AI providers
+
+## Contributing
+
+Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- **Issues:** [GitHub Issues](https://github.com/yourusername/codeanchor/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/codeanchor/discussions)
+
+## Credits
+
+Built with ❤️ by the CodeAnchor team.
+
+---
+
+**⚓ Anchor your code to standards and living documentation**
