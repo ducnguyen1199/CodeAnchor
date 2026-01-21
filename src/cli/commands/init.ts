@@ -198,6 +198,25 @@ export async function initCommand(): Promise<void> {
     await fs.mkdir('.anchor', { recursive: true });
     await fs.mkdir('.anchor/cache', { recursive: true });
 
+    // Step 9: Optional git hooks installation
+    const { installHooks } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'installHooks',
+      message: 'Install git pre-commit hook? (fast doc sync on commit)',
+      default: true
+    }]);
+
+    if (installHooks) {
+      try {
+        const { hooksInstaller } = await import('../../git/hooks-installer.js');
+        const installSpinner = ora('Installing git hooks...').start();
+        await hooksInstaller.install();
+        installSpinner.succeed('Git hooks installed');
+      } catch (error) {
+        console.log(chalk.yellow('⚠️  Failed to install git hooks:'), error);
+      }
+    }
+
     // Success message
     console.log(boxen(
       chalk.green.bold('✓ Setup Complete!') + '\n\n' +

@@ -20,3 +20,21 @@ export { templateEngine, TemplateEngine, renderComponentDoc, type ComponentTempl
 // Phase 2: Detection engine and generators
 export { ComponentAnalyzer, componentAnalyzer, ComponentAnalysisError, type ComponentMeta, type PropMeta } from './analyzers/component-analyzer.js';
 export { DocGenerator, createDocGenerator, type DocGeneratorOptions } from './generators/doc-generator.js';
+
+// Phase 3: Git integration
+export {
+  GitError,
+  isGitRepository,
+  getStagedFiles,
+  getStagedDiff,
+  stageFile,
+  stageFiles,
+  getCurrentBranch,
+  isTrackedFile,
+  getGitRoot,
+  getChangedFiles,
+  createCommit,
+  getFileAtCommit
+} from './git/git-utils.js';
+export { PreCommitHandler, preCommitHandler, type PreCommitResult } from './git/pre-commit-handler.js';
+export { HooksInstaller, hooksInstaller } from './git/hooks-installer.js';

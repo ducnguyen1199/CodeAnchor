@@ -9,6 +9,8 @@ import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
 import { syncCommand } from './commands/sync.js';
 import { watchCommand } from './commands/watch.js';
+import { enrichCommand } from './commands/enrich.js';
+import { commitCommand } from './commands/commit.js';
 
 const program = new Command();
 
@@ -38,6 +40,20 @@ program
   .description('Watch for changes and auto-sync documentation')
   .option('--no-ai', 'Disable AI-powered generation')
   .action(watchCommand);
+
+// Enrich command - AI enhancement
+program
+  .command('enrich')
+  .description('Enrich documentation with AI descriptions')
+  .option('--force', 'Re-enrich all components')
+  .action(enrichCommand);
+
+// Commit command - AI commit messages
+program
+  .command('commit')
+  .description('Create commit with AI-generated message')
+  .option('-m, --message <message>', 'Use provided message instead of AI')
+  .action(commitCommand);
 
 // Parse command line arguments
 program.parse();
