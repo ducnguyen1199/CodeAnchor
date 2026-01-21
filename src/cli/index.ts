@@ -7,6 +7,8 @@
 
 import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
+import { syncCommand } from './commands/sync.js';
+import { watchCommand } from './commands/watch.js';
 
 const program = new Command();
 
@@ -20,6 +22,22 @@ program
   .command('init')
   .description('Initialize CodeAnchor in your project')
   .action(initCommand);
+
+// Sync command - Generate/update documentation
+program
+  .command('sync')
+  .description('Sync component documentation')
+  .option('--fast', 'Only process changed files (cache-aware)')
+  .option('--force', 'Force regeneration of all docs')
+  .option('--no-ai', 'Disable AI-powered generation')
+  .action(syncCommand);
+
+// Watch command - Monitor file changes
+program
+  .command('watch')
+  .description('Watch for changes and auto-sync documentation')
+  .option('--no-ai', 'Disable AI-powered generation')
+  .action(watchCommand);
 
 // Parse command line arguments
 program.parse();

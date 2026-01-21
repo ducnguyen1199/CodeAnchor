@@ -13,6 +13,10 @@ export { configLoader, ConfigLoader, ConfigError, loadConfig } from './core/conf
 export { configSchema, type AnchorConfig, type PartialAnchorConfig } from './core/config-schema.js';
 export { techDetector, TechDetector, type DetectionResult, type PackageJson } from './core/tech-detector.js';
 export { createProvider, getDefaultModel, isProviderSupported } from './providers/index.js';
-export type { AIProvider, AIProviderConfig, ComponentMeta } from './providers/index.js';
+export type { AIProvider, AIProviderConfig } from './providers/index.js';
 export { AIProviderError, ConnectionTestError, GenerationError } from './providers/index.js';
 export { templateEngine, TemplateEngine, renderComponentDoc, type ComponentTemplateData } from './templates/index.js';
+
+// Phase 2: Detection engine and generators
+export { ComponentAnalyzer, componentAnalyzer, ComponentAnalysisError, type ComponentMeta, type PropMeta } from './analyzers/component-analyzer.js';
+export { DocGenerator, createDocGenerator, type DocGeneratorOptions } from './generators/doc-generator.js';

@@ -27,7 +27,7 @@ export interface ComponentTemplateData {
   }>;
   example?: string;
   dependencies?: string[];
-  lastUpdated: string;
+  lastUpdated?: string;
 }
 
 /**
